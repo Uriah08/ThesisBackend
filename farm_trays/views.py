@@ -5,6 +5,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from .serializers import FarmTraySerializer, TrayDashboardSerializer
 from django.shortcuts import get_object_or_404
+from django.db.models import Max
 
 from .models import FarmTrayModel
 
@@ -27,7 +28,12 @@ class GetFarmTraysView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, farm_id):
-        trays = FarmTrayModel.objects.filter(farm_id=farm_id).order_by('-created_at')
+        trays = (
+            FarmTrayModel.objects
+            .filter(farm_id=farm_id)
+            .annotate(latest_session_datetime=Max('session_trays__created_at'))
+            .order_by('-created_at')
+        )
         serializer = FarmTraySerializer(trays, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
