@@ -7,10 +7,12 @@ from django.db.models.functions import TruncDate
 class FarmTraySerializer(serializers.ModelSerializer):
     farm_name = serializers.CharField(source="farm.name", read_only=True)
     farm_owner = serializers.IntegerField(source="farm.owner.id", read_only=True)
+    
+    latest_session_datetime = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = FarmTrayModel
-        fields = ["id", "farm", "farm_name", "farm_owner", "name", "description", "status", "created_at"]
+        fields = ["id", "farm", "farm_name", "farm_owner", "name", "description", "status", "created_at", "latest_session_datetime",]
         read_only_fields = ["status", "created_at"]
 
 class TrayDashboardSerializer(serializers.ModelSerializer):
