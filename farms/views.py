@@ -299,7 +299,7 @@ class GetFarmDashboardView(APIView):
 
     def get(self, request, farm_id):
         farm = get_object_or_404(FarmModel, id=farm_id)
-        serializer = FarmDashboardSerializer(farm)
+        serializer = FarmDashboardSerializer(farm, context={'request': request})
         return Response(serializer.data)
 
     

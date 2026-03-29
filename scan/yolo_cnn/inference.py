@@ -26,8 +26,8 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-YOLO_DETECTION_PATH = os.path.join(BASE_DIR, 'model', 'yolo', 'yolov8-2.pt')
-YOLO_CLASSIFICATION_PATH = os.path.join(BASE_DIR, 'model', 'yolocls', 'yolov8-cls-1.pt')
+YOLO_DETECTION_PATH = os.path.join(BASE_DIR, 'model', 'yolo', 'yolov8-3.pt')
+YOLO_CLASSIFICATION_PATH = os.path.join(BASE_DIR, 'model', 'yolocls', 'yolov8-cls-4.pt')
 
 # Don't load models at import time!
 _detection_model = None
