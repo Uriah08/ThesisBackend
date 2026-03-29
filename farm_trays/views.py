@@ -107,7 +107,7 @@ class GetTrayDashboardView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request, tray_id):
-        farm = get_object_or_404(FarmTrayModel, id=tray_id)
-        serializer = TrayDashboardSerializer(farm)
+        tray = get_object_or_404(FarmTrayModel, id=tray_id)  # ← was 'farm'
+        serializer = TrayDashboardSerializer(tray, context={'request': request})
         return Response(serializer.data)
     
