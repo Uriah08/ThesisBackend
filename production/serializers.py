@@ -10,6 +10,7 @@ class FarmProductionSerializer(serializers.ModelSerializer):
             'title',
             'notes',
             'satisfaction',
+            'total',
             'quantity',
             'landing',
             'created_at',

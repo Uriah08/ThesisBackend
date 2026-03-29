@@ -13,6 +13,7 @@ class FarmProductionModel(models.Model):
     notes = models.TextField(blank=True, null=True)
     satisfaction = models.IntegerField(default=3)
     quantity = models.FloatField(default=0)
+    total = models.IntegerField(default=0)
     landing = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     
