@@ -1,60 +1,38 @@
-# import os
-# from ultralytics import YOLO
-
-# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# YOLO_DETECTION_PATH = os.path.join(BASE_DIR, 'model', 'yolo', 'yolov8-2.pt')
-# YOLO_CLASSIFICATION_PATH = os.path.join(BASE_DIR, 'model', 'yolocls', 'yolov8-cls-1.pt')  # YOLOv8 classification model
-
-# print("="*50)
-# print("LOADING AI MODELS...")
-# print("="*50)
-
-# # Load YOLO detection model
-# detection_model = YOLO(YOLO_DETECTION_PATH)
-# print("✓ YOLO detection model loaded")
-
-# # Load YOLO classification model
-# classification_model = YOLO(YOLO_CLASSIFICATION_PATH)
-# print("✓ YOLO classification model loaded")
-
-# print("="*50)
-# print("✓ ALL MODELS READY!")
-# print("="*50)
-
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 YOLO_DETECTION_PATH = os.path.join(BASE_DIR, 'model', 'yolo', 'yolov8-4.pt')
-YOLO_CLASSIFICATION_PATH = os.path.join(BASE_DIR, 'model', 'yolocls', 'yolov8-cls-6.pt')
 
-# Don't load models at import time!
+YOLO_CLASSIFICATION_PATHS = {
+    'MODEL6': os.path.join(BASE_DIR, 'model', 'yolocls', 'yolov8-cls-6.pt'),
+    'MODEL7': os.path.join(BASE_DIR, 'model', 'yolocls', 'yolov8-cls-7.pt'),
+    'MODEL8': os.path.join(BASE_DIR, 'model', 'yolocls', 'yolov8-cls-8.pt'),
+}
+
 _detection_model = None
-_classification_model = None
+_classification_models = {}
 
 def get_detection_model():
-    """Lazy load detection model"""
     global _detection_model
     if _detection_model is None:
-        # Import here, not at top of file!
         from ultralytics import YOLO
         print("Loading YOLO detection model...")
         _detection_model = YOLO(YOLO_DETECTION_PATH)
         print("✓ YOLO detection model loaded")
     return _detection_model
 
-def get_classification_model():
-    """Lazy load classification model"""
-    global _classification_model
-    if _classification_model is None:
-        # Import here, not at top of file!
+def get_classification_model(model_name='MODEL8'):
+    global _classification_models
+    if model_name not in _classification_models:
         from ultralytics import YOLO
-        print("Loading YOLO classification model...")
-        _classification_model = YOLO(YOLO_CLASSIFICATION_PATH)
-        print("✓ YOLO classification model loaded")
-    return _classification_model
+        path = YOLO_CLASSIFICATION_PATHS.get(model_name)
+        if not path:
+            raise ValueError(f"Unknown model: {model_name}")
+        print(f"Loading classification model {model_name}...")
+        _classification_models[model_name] = YOLO(path)
+        print(f"✓ {model_name} loaded")
+    return _classification_models[model_name]
 
-# Export functions instead of models
 detection_model = get_detection_model
 classification_model = get_classification_model
