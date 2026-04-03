@@ -20,10 +20,9 @@ class ScanView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    def detect_and_classify(self, image):
-        # Get models (lazy load on first call)
+    def detect_and_classify(self, image, model_name='MODEL8'):
         det_model = detection_model()
-        cls_model = classification_model()
+        cls_model = classification_model(model_name)
         
         original = image.copy()
         results = det_model(image, conf=0.25, verbose=False)
@@ -45,22 +44,16 @@ class ScanView(APIView):
             class_name = det_model.names[int(box.cls[0])]
 
             if class_name.lower() == 'fish':
-                # Crop the detected fish
                 crop = original[y1:y2, x1:x2]
                 if crop.size == 0:
                     continue
                 
-                # YOLOv8 classification expects BGR (OpenCV format)
-                # Predict using YOLOv8 classification model
                 cls_results = cls_model(crop, verbose=False)
                 
-                # Get prediction results
                 probs = cls_results[0].probs
-                top1_idx = probs.top1  # Index of top prediction
-                top1_conf = float(probs.top1conf)  # Confidence of top prediction
+                top1_idx = probs.top1
+                top1_conf = float(probs.top1conf)
                 
-                # Get class name from index
-                # Assuming class indices: 0='DRY', 1='UNDRIED' (alphabetical order)
                 predicted_class = cls_model.names[top1_idx]
                 
                 if predicted_class == 'UNDRIED':
@@ -68,7 +61,7 @@ class ScanView(APIView):
                     conf_pct = top1_conf * 100
                     color = COLORS['UNDRIED']
                     undried_count += 1
-                else:  # 'DRY'
+                else:
                     label = 'DRY'
                     conf_pct = top1_conf * 100
                     color = COLORS['DRY']
@@ -82,7 +75,6 @@ class ScanView(APIView):
             else:
                 continue
 
-            # Draw bounding box and label
             cv2.rectangle(original, (x1, y1), (x2, y2), color, 3)
             label_text = f"{label} {conf_pct:.1f}%"
             (tw, th), _ = cv2.getTextSize(label_text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
@@ -103,7 +95,8 @@ class ScanView(APIView):
         if not image_file:
             return Response({"detail": "No image uploaded"}, status=400)
 
-        # Save uploaded image temporarily
+        model_name = request.data.get('model', 'MODEL8')
+
         temp_path = "temp.jpg"
         with open(temp_path, "wb+") as f:
             for chunk in image_file.chunks():
@@ -111,24 +104,20 @@ class ScanView(APIView):
 
         image = cv2.imread(temp_path)
 
-        annotated_image, detections, dry_count, undried_count, reject_count = self.detect_and_classify(image)
+        annotated_image, detections, dry_count, undried_count, reject_count = self.detect_and_classify(image, model_name)
 
-        # Create per-user folder
         user_id = str(request.user.id) if request.user.is_authenticated else "default"
         user_folder = os.path.join(settings.MEDIA_ROOT, "scanned", user_id)
 
-        # Delete all previous scans for this user
         if os.path.exists(user_folder):
             shutil.rmtree(user_folder)
 
         os.makedirs(user_folder, exist_ok=True)
 
-        # Save new annotated image
         filename = f"{uuid.uuid4().hex[:6]}.jpg"
         save_path = os.path.join(user_folder, filename)
         cv2.imwrite(save_path, annotated_image)
 
-        # Build URL
         image_url = request.build_absolute_uri(
             settings.MEDIA_URL + f"scanned/{user_id}/{filename}?t={datetime.now().timestamp()}"
         )
