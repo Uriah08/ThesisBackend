@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'sandbox',
     'core.apps.CoreConfig',
     'production',
+    'retails',
     
     'rest_framework',
     'rest_framework.authtoken',

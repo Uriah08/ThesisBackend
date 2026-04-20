@@ -1,8 +1,8 @@
 from django.db import models
 from django.utils import timezone
 from farms.models import FarmModel
+from retails.models import RetailShop
 
-# Create your models here.
 class FarmProductionModel(models.Model):
     farm = models.ForeignKey(
         FarmModel,
@@ -15,7 +15,14 @@ class FarmProductionModel(models.Model):
     quantity = models.FloatField(default=0)
     total = models.IntegerField(default=0)
     landing = models.CharField(max_length=255, blank=True, null=True)
+    retail = models.ForeignKey(
+        RetailShop,
+        on_delete=models.SET_NULL,
+        related_name='productions',
+        blank=True,
+        null=True,
+    )
     created_at = models.DateTimeField(default=timezone.now)
-    
+
     def __str__(self):
         return f"{self.title} ({self.farm.name})"
