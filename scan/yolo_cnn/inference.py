@@ -2,7 +2,7 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-YOLO_DETECTION_PATH = os.path.join(BASE_DIR, 'model', 'yolo', 'yolov8-4.pt')
+YOLO_DETECTION_PATH = os.path.join(BASE_DIR, 'model', 'yolo', 'yolov8-5.pt')
 
 YOLO_CLASSIFICATION_PATHS = {
     'MODEL6': os.path.join(BASE_DIR, 'model', 'yolocls', 'yolov8-cls-6.pt'),

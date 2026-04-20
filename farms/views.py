@@ -7,6 +7,9 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
+from core.expo import send_push_notification
+from notifications.models import DeviceToken, Notification, Recipient
+
 from .models import FarmModel
 from .serializers import FarmSerializer, JoinFarmSerializer, MemberSerializer, FarmDashboardSerializer
 
@@ -50,6 +53,33 @@ class JoinFarmView(APIView):
                 return Response({"detail": "You are already a member of this farm."}, status=status.HTTP_200_OK)
 
             farm.members.add(request.user)
+
+            joiner = request.user
+            full_name = f"{joiner.first_name} {joiner.last_name}".strip() or joiner.username
+
+            notification = Notification.objects.create(
+                title=f"{full_name} joined {farm.name}",
+                body=f"{full_name} has just joined your farm \"{farm.name}\". Welcome them to the community!",
+                type="people",
+                data={
+                    "farm_id": farm.id,
+                    "farm_name": farm.name,
+                    "user_id": joiner.id,
+                    "username": joiner.username,
+                }
+            )
+
+            recipients = set(farm.members.exclude(id=joiner.id))
+            recipients.add(farm.owner)
+
+            Recipient.objects.bulk_create([
+                Recipient(notification=notification, user=user)
+                for user in recipients
+            ], ignore_conflicts=True)
+
+            for token in DeviceToken.objects.filter(user__in=recipients):
+                send_push_notification(token.token, notification.title, notification.body)
+
             return Response({"detail": "Joined the farm successfully."}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
