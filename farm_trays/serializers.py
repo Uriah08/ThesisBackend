@@ -24,7 +24,7 @@ class TrayDashboardSerializer(serializers.ModelSerializer):
     class Meta:
         model = FarmTrayModel
         fields = [
-            "id", "name", "status", "created_at",
+            "id", "name", "status", "created_at", "dry", "undried",
             "session_tray_count", "detected_and_reject_by_day",
             "recent_harvested_trays", "detection_summary",
         ]

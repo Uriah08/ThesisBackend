@@ -84,6 +84,8 @@ class CreateTrayView(APIView):
             active_session.save()
 
             tray.status = "inactive"
+            tray.dry = 0
+            tray.undried = 0
             tray.save()
 
             return Response({
@@ -192,6 +194,17 @@ class CreateTrayProgressView(APIView):
                 tray=tray,
                 created_by=request.user
             )
+            
+            dry = request.data.get("dry")
+            undried = request.data.get("undried")
+            
+            farm_tray = tray.tray  # SessionTrayModel.tray → FarmTrayModel
+            if dry is not None:
+                farm_tray.dry = dry
+            if undried is not None:
+                farm_tray.undried = undried
+            farm_tray.save(update_fields=["dry", "undried"])
+            
             response_data = TrayStepSerializer(tray_step).data
             response_data["message"] = f"Progress step '{tray_step.title}' added successfully."
             return Response(response_data, status=status.HTTP_201_CREATED)
