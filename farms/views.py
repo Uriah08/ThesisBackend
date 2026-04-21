@@ -59,13 +59,17 @@ class JoinFarmView(APIView):
 
             notification = Notification.objects.create(
                 title=f"{full_name} joined {farm.name}",
-                body=f"{full_name} has just joined your farm \"{farm.name}\". Welcome them to the community!",
+                body=(
+                    f"{full_name} just joined your farm.\n\n"
+                    f"Give them a warm welcome!"
+                ),
                 type="people",
                 data={
                     "farm_id": farm.id,
                     "farm_name": farm.name,
                     "user_id": joiner.id,
                     "username": joiner.username,
+                    "profile_picture": joiner.profile_picture
                 }
             )
 
