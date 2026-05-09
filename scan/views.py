@@ -89,6 +89,9 @@ class ScanView(APIView):
 
             if class_name.lower() != 'fish':
                 continue
+            
+            if confidence < 0.50:
+                continue
 
             # skip this fish if it overlaps a reject box
             if is_overlapping((x1, y1, x2, y2)):
